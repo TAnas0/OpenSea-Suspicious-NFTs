@@ -99,7 +99,7 @@ def is_nft_suspicious(nft_url):
             "url": nft_url,
             "owner": owner,
         }
-        if res.text.find("Reported for suspicious") > 0:
+        if res.text.find('"isListable":false') > 0:
             logging.info(f"Found suspicious NFT of URL {nft_url}")
             return True, data
         else:
