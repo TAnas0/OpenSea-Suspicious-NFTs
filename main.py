@@ -13,6 +13,7 @@ import time
 from multiprocessing import Pool
 from argparse import ArgumentParser
 import logging
+import json
 
 import cloudscraper
 import pandas as pd
@@ -99,7 +100,7 @@ def is_nft_suspicious(nft_url):
             "url": nft_url,
             "owner": owner,
         }
-        if res.text.find("Reported for suspicious") > 0:
+        if res.text.find('"isListable":false') > 0:
             logging.info(f"Found suspicious NFT of URL {nft_url}")
             return True, data
         else:
@@ -109,7 +110,7 @@ def is_nft_suspicious(nft_url):
 OPENSEA_BASE_URL = (
     "https://opensea.io/assets/ethereum/"  # TODO adjust for other blockchains
 )
-
+OPENSEA_BASE_API = "https://api.opensea.io/api/v1/asset/"
 
 def list_collection_nfts_urls(collection_address):
     """List all OpenSea URLs of NFTs in a collection
@@ -120,9 +121,15 @@ def list_collection_nfts_urls(collection_address):
     Returns:
         array: list of the OpenSea URLs of NFTs
     """
+    link = (OPENSEA_BASE_API + collection_address + "/0/?format=json")
+    res = scraper.get(link)
+    parsed = json.loads(res.text)
+    nft_supply = int(parsed['collection']['stats']['total_supply'])
+    
+    
     # ! This is just a mock function. It is to be replaced with a call to the OpenSea API
     nft_urls = []
-    for i in range(0, 1000):
+    for i in range(0, nft_supply):
         nft_urls.append(f"{OPENSEA_BASE_URL}{collection_address}/{i}")
     return nft_urls
 
